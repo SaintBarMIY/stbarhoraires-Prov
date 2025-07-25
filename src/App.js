@@ -1,4 +1,4 @@
-/* global __app_id, __firebase_config, __initial_auth_token */
+/* global __initial_auth_token */ // __initial_auth_token est une variable spécifique à l'environnement Canvas, elle sera undefined sur Netlify et la connexion anonyme sera utilisée.
 import React, { useState, useEffect } from 'react';
 import { initializeApp } from 'firebase/app';
 import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from 'firebase/auth';
@@ -161,7 +161,7 @@ const convertSetsToArrays = (obj) => {
 
 function App() {
   // Déclaration de appId au début du composant pour qu'il soit accessible globalement
-  // Utilisation directe des variables globales fournies par l'environnement Canvas
+  // Utilisation de process.env pour accéder aux variables d'environnement Netlify
   const appId = typeof process.env.REACT_APP_APP_ID !== 'undefined' ? process.env.REACT_APP_APP_ID : 'default-app-id';
 
   const [professorHours, setProfessorHours] = useState({});
@@ -184,7 +184,7 @@ function App() {
   // Initialisation de Firebase et authentification
   useEffect(() => {
     try {
-      // Utilisation directe de __firebase_config
+      // Utilisation de process.env.REACT_APP_FIREBASE_CONFIG
       const firebaseConfig = JSON.parse(typeof process.env.REACT_APP_FIREBASE_CONFIG !== 'undefined' ? process.env.REACT_APP_FIREBASE_CONFIG : '{}');
 
       if (Object.keys(firebaseConfig).length === 0) {
@@ -205,6 +205,8 @@ function App() {
           setUserId(user.uid);
         } else {
           try {
+            // Dans l'environnement Netlify, __initial_auth_token sera undefined,
+            // donc nous nous rabattrons sur la connexion anonyme.
             if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
               await signInWithCustomToken(firebaseAuth, __initial_auth_token);
             } else {
