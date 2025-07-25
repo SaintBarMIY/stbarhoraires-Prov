@@ -1,490 +1,8 @@
+/* global __app_id, __firebase_config, __initial_auth_token */
 import React, { useState, useEffect } from 'react';
-
-// Le contenu du fichier GPU001.TXT est pré-chargé ici pour la démonstration.
-// Ce contenu sera remplacé par le fichier téléchargé par l'utilisateur.
-const preloadedFileContent = `7060,"2A","MOM","DDUR","G31",5,6,,
-7060,"2A","MOM","DDUR","G31",5,7,,
-7060,"2E","MAE","DDUR",,5,6,,
-7060,"2E","MAE","DDUR",,5,7,,
-7060,"2F","ENH","DDUR",,5,6,,
-7060,"2F","ENH","DDUR",,5,7,,
-7060,"2G","LMR","REM",,5,6,,
-7060,"2G","LMR","REM",,5,7,,
-7060,"2H","CHE","REM",,5,6,,
-7060,"2H","CHE","REM",,5,7,,
-7060,"2I","LUN","REM",,5,6,,
-7060,"2I","LUN","REM",,5,7,,
-7060,"2J","BRF","REM","C23",5,6,,
-7060,"2J","BRF","REM","C23",5,7,,
-7060,"2K","DUG","REM",,5,6,,
-7060,"2K","DUG","REM",,5,7,,
-7060,"2L","AEM","REM",,5,6,,
-7060,"2L","AEM","REM",,5,7,,
-7060,"2B","MIR","REM",,5,6,,
-7060,"2B","MIR","REM",,5,7,,
-7060,"2C","SIA","REM",,5,6,,
-7060,"2C","SIA","REM",,5,7,,
-7060,"2D","BRM","DDUR",,5,6,,
-7060,"2D","BRM","DDUR",,5,7,,
-7060,"2M","DIA","REM",,5,6,,
-7060,"2M","DIA","REM",,5,7,,
-7060,"2A","RIM","REM",,5,6,,
-7060,"2A","RIM","REM",,5,7,,
-7060,"2B","DIM","REM",,5,6,,
-7060,"2B","DIM","REM",,5,7,,
-7060,"2B","ANC","REM",,5,6,,
-7060,"2B","ANC","REM",,5,7,,
-7060,"2A","MNM","DDUR","G31",5,6,,
-7060,"2A","MNM","DDUR","G31",5,7,,
-7060,"2B","BLS","DDUR",,5,6,,
-7060,"2B","BLS","DDUR",,5,7,,
-7060,"2L","HOA","REM",,5,6,,
-7060,"2L","HOA","REM",,5,7,,
-7063,"8B","MOM","DDUR",,2,4,,
-7063,"8B","BRM","DDUR",,2,4,,
-7063,"8B",,"DDUR",,2,4,,
-7063,"8B","MAE","DDUR",,2,4,,
-7063,"8B","MNM","DDUR",,2,4,,
-7063,"8B","BLS","DDUR","G33",2,4,,
-7071,"8A","BLV","HORA",,2,5,,
-7071,"8A","BLV","HORA",,2,6,,
-7071,"8A","BLV","HORA",,2,7,,
-7071,"8A","BLV","HORA",,5,6,,
-7071,"8A","BLV","HORA",,5,7,,
-7071,"8A","MIY","HORA",,2,5,,
-7071,"8A","MIY","HORA",,2,6,,
-7071,"8A","MIY","HORA",,2,7,,
-7071,"8A","MIY","HORA",,5,6,,
-7071,"8A","MIY","HORA",,5,7,,
-7071,"8A","EGF","HORA",,2,5,,
-7071,"8A","EGF","HORA",,2,6,,
-7071,"8A","EGF","HORA",,2,7,,
-7071,"8A","EGF","HORA",,5,6,,
-7071,"8A","EGF","HORA",,5,7,,
-7002,"7A","SIC","GEOM","HELM",2,5,,
-7002,"7A","SIC","GEOM","HELM",2,6,,
-7002,"7A","SIC","GEOM","HELM",3,1,,
-7002,"7A","SIC","GEOM","HELM",3,2,,
-7002,"7A","SIC","GEOM","HELM",5,5,,
-7002,"7A","SIC","GEOM","HELM",5,6,,
-7003,"7A","DRL","ALGE","HELM",2,3,,
-7003,"7A","DRL","ALGE","HELM",2,4,,
-7003,"7A","DRL","ALGE","HELM",3,3,,
-7003,"7A","DRL","ALGE","HELM",3,4,,
-7003,"7A","DRL","ALGE","HELM",4,1,,
-7003,"7A","DRL","ALGE","HELM",4,2,,
-7004,"7A","TAM","ANAL","HELM",1,1,,
-7004,"7A","TAM","ANAL","HELM",1,2,,
-7004,"7A","TAM","ANAL","HELM",4,5,,
-7004,"7A","TAM","ANAL","HELM",4,6,,
-7004,"7A","TAM","ANAL","HELM",5,3,,
-7004,"7A","TAM","ANAL","HELM",5,4,,
-7005,"7A","BOM","TRIGO","HELM",1,3,,
-7005,"7A","BOM","TRIGO","HELM",1,4,,
-7005,"7A","BOM","TRIGO","HELM",4,7,,
-7006,"7B","LAF","TRIGO","HELS",1,5,,
-7006,"7B","LAF","TRIGO","HELS",4,5,,
-7006,"7B","LAF","TRIGO","HELS",4,6,,
-7007,"7B","DEF","ANAL","HELS",1,3,,
-7007,"7B","DEF","ANAL","HELS",1,4,,
-7007,"7B","DEF","ANAL","HELS",2,5,,
-7007,"7B","DEF","ANAL","HELS",2,6,,
-7007,"7B","DEF","ANAL","HELS",4,7,,
-7008,"7A","DMS","ANGL","HELM",1,5,,
-7008,"7A","DMS","ANGL","HELM",1,6,,
-7009,"7B","DMS","ANGL","HELS",2,3,,
-7009,"7B","DMS","ANGL","HELS",2,4,,
-7010,"7B","BAM","ALGE","HELS",2,7,,
-7010,"7B","BAM","ALGE","HELS",5,5,,
-7010,"7B","BAM","ALGE","HELS",5,6,,
-7011,"7A","CAF","INFO","C21",4,3,,
-7011,"7A","CAF","INFO","C21",4,4,,
-7012,"7B","HAL","CHI","HELS",1,1,,
-7012,"7B","HAL","CHI","HELS",1,2,,
-7012,"7B","HAL","CHI","HELS",2,1,,
-7012,"7B","HAL","CHI","HELS",2,2,,
-7012,"7B","HAL","CHI","HELS",3,1,,
-7012,"7B","HAL","CHI","HELS",3,2,,
-7013,"7B","BRD","BIO","HELS",4,3,,
-7013,"7B","BRD","BIO","HELS",4,4,,
-7014,"7B","GOV","BIO","HELS",3,3,,
-7014,"7B","GOV","BIO","HELS",3,4,,
-7014,"7B","GOV","BIO","HELS",5,1,,
-7014,"7B","GOV","BIO","HELS",5,2,,
-7015,"7A","GOV","CHI","HELM",2,1,,
-7015,"7A","GOV","CHI","HELM",2,2,,
-7016,"7A","PRL","PHY","HELM",2,7,,
-7016,"7A","PRL","PHY","HELM",5,1,,
-7016,"7A","PRL","PHY","HELM",5,2,,
-7017,"7B","PRL","PHY","HELS",1,6,,
-7017,"7B","PRL","PHY","HELS",1,7,,
-7017,"7B","PRL","PHY","HELS",4,1,,
-7017,"7B","PRL","PHY","HELS",4,2,,
-7017,"7B","PRL","PHY","HELS",5,3,,
-7017,"7B","PRL","PHY","HELS",5,4,,
-2002,"2A","BOP","REL","F21",4,5,,
-2002,"2A","BOP","REL","F21",5,5,,
-2003,"2B","BOP","REL","G41",2,5,,
-2003,"2B","BOP","REL","G41",3,1,,
-2004,"2C","BOP","REL","G42",1,7,,
-2004,"2C","BOP","REL","G42",5,2,,
-2005,"2D","BOP","REL","F33",2,8,,
-2005,"2D","BOP","REL","F33",4,6,,
-2006,"2E","JAJ","REL","F26",2,2,,
-2006,"2E","JAJ","REL","F26",4,6,,
-2007,"2F","ANM","REL","G43",2,4,,
-2007,"2F","ANM","REL","G43",4,6,,
-2008,"2G","BOP","REL","F35",1,3,,
-2008,"2G","BOP","REL","F35",2,4,,
-2009,"2H","BOP","REL","F38",2,7,,
-2009,"2H","BOP","REL","F38",3,2,,
-2010,"2I","BOP","REL","G44",1,5,,
-2010,"2I","BOP","REL","G44",3,3,,
-2011,"2J","ANC","REL","C23",2,7,,
-2011,"2J","ANC","REL","C23",4,7,,
-2012,"2K","ANC","REL","F34",1,7,,
-2012,"2K","ANC","REL","F34",5,3,,
-2013,"2L","BOP","REL","F32",1,4,,
-2013,"2L","BOP","REL","F32",2,6,,
-2014,"2M","ANC","REL","F31",3,1,,
-2014,"2M","ANC","REL","F31",4,1,,
-2015,"2A","POE","FRA","F21",1,3,,
-2015,"2A","POE","FRA","F21",1,5,,
-2015,"2A","POE","FRA","F21",2,8,,
-2015,"2A","POE","FRA","F21",3,1,,
-2015,"2A","POE","FRA","F21",3,2,,
-2016,"2B","ANM","FRA","G41",1,5,,
-2016,"2B","ANM","FRA","G41",1,6,,
-2016,"2B","ANM","FRA","G41",2,3,,
-2016,"2B","ANM","FRA","G41",4,1,,
-2016,"2B","ANM","FRA","G41",5,1,,
-2017,"2C","AEM","FRA","G42",2,5,,
-2017,"2C","AEM","FRA","G42",2,6,,
-2017,"2C","AEM","FRA","G42",3,4,,
-2017,"2C","AEM","FRA","G42",4,3,,
-2017,"2C","AEM","FRA","G42",5,3,,
-2018,"2D","DRF","FRA","F33",1,4,,
-2018,"2D","DRF","FRA","F33",1,6,,
-2018,"2D","DRF","FRA","F33",2,6,,
-2018,"2D","DRF","FRA","F33",4,4,,
-2018,"2D","DRF","FRA","F33",5,3,,
-2019,"2E","JAJ","FRA","F26",1,4,,
-2019,"2E","JAJ","FRA","F26",2,3,,
-2019,"2E","JAJ","FRA","F26",2,4,,
-2019,"2E","JAJ","FRA","F26",4,2,,
-2019,"2E","JAJ","FRA","F26",5,2,,
-2020,"2F","ANM","FRA","G43",1,2,,
-2020,"2F","ANM","FRA","G43",2,7,,
-2020,"2F","ANM","FRA","G43",4,3,,
-2020,"2F","ANM","FRA","G43",4,4,,
-2020,"2F","ANM","FRA","G43",5,2,,
-2021,"2G","DRF","FRA","F35",2,5,,
-2021,"2G","DRF","FRA","F35",3,1,,
-2021,"2G","DRF","FRA","F35",3,2,,
-2021,"2G","DRF","FRA","F35",4,1,,
-2021,"2G","DRF","FRA","F35",5,5,,
-2022,"2H","DIM","FRA","F38",1,3,,
-2022,"2H","DIM","FRA","F38",2,5,,
-2022,"2H","DIM","FRA","F38",3,4,,
-2022,"2H","DIM","FRA","F38",4,7,,
-2022,"2H","DIM","FRA","F38",5,5,,
-2023,"2I","AEM","FRA","G44",2,8,,
-2023,"2I","AEM","FRA","G44",3,1,,
-2023,"2I","AEM","FRA","G44",4,1,,
-2023,"2I","AEM","FRA","G44",4,2,,
-2023,"2I","AEM","FRA","G44",5,1,,
-2024,"2J","PZO","FRA","C23",1,2,,
-2024,"2J","PZO","FRA","C23",1,6,,
-2024,"2J","PZO","FRA","C23",2,3,,
-2024,"2J","PZO","FRA","C23",3,1,,
-2024,"2J","PZO","FRA","C23",3,2,,
-2024,"2J","PZO","FRA","C23",4,1,,
-2024,"2J","PZO","FRA","C23",5,3,,
-2024,"2J","PZO","FRA","C23",5,4,,
-2025,"2K","ANC","FRA","F34",2,1,,
-2025,"2K","ANC","FRA","F34",3,3,,
-2025,"2K","ANC","FRA","F34",3,4,,
-2025,"2K","ANC","FRA","F34",4,2,,
-2025,"2K","ANC","FRA","F34",5,4,,
-2026,"2L","ANC","FRA","F32",2,3,,
-2026,"2L","ANC","FRA","F32",3,2,,
-2026,"2L","ANC","FRA","F32",4,5,,
-2026,"2L","ANC","FRA","F32",4,6,,
-2026,"2L","ANC","FRA","F32",5,1,,
-2027,"2M","JAJ","FRA","F31",1,5,,
-2027,"2M","JAJ","FRA","F31",2,1,,
-2027,"2M","JAJ","FRA","F31",4,3,,
-2027,"2M","JAJ","FRA","F31",4,4,,
-2027,"2M","JAJ","FRA","F31",5,1,,
-2028,"2A","PRP","MAT","F21",1,4,,
-2028,"2A","PRP","MAT","F21",2,3,,
-2028,"2A","PRP","MAT","F21",4,1,,
-2028,"2A","PRP","MAT","F21",5,1,,
-2028,"2A","PRP","MAT","F21",5,2,,
-2029,"2B","PRP","MAT","G41",1,2,,
-2029,"2B","PRP","MAT","G41",1,3,,
-2029,"2B","PRP","MAT","G41",2,6,,
-2029,"2B","PRP","MAT","G41",5,3,,
-2029,"2B","PRP","MAT","G41",5,5,,
-2030,"2C","MOM","MAT","G42",1,4,,
-2030,"2C","MOM","MAT","G42",2,1,,
-2030,"2C","MOM","MAT","G42",2,7,,
-2030,"2C","MOM","MAT","G42",4,7,,
-2030,"2C","MOM","MAT","G42",5,5,,
-2031,"2D","HOA","MAT","F33",1,3,,
-2031,"2D","HOA","MAT","F33",2,7,,
-2031,"2D","HOA","MAT","F33",4,1,,
-2031,"2D","HOA","MAT","F33",4,3,,
-2031,"2D","HOA","MAT","F33",5,1,,
-2032,"2E","LUN","MAT","F26",1,2,,
-2032,"2E","LUN","MAT","F26",2,7,,
-2032,"2E","LUN","MAT","F26",4,4,,
-2032,"2E","LUN","MAT","F26",4,5,,
-2032,"2E","LUN","MAT","F26",5,3,,
-2033,"2F","SIA","MAT","G43",1,3,,
-2033,"2F","SIA","MAT","G43",2,1,,
-2033,"2F","SIA","MAT","G43",3,3,,
-2033,"2F","SIA","MAT","G43",3,4,,
-2033,"2F","SIA","MAT","G43",4,1,,
-2034,"2G","HOA","MAT","F35",1,4,,
-2034,"2G","HOA","MAT","F35",2,3,,
-2034,"2G","HOA","MAT","F35",2,6,,
-2034,"2G","HOA","MAT","F35",4,6,,
-2034,"2G","HOA","MAT","F35",5,2,,
-2035,"2H","MIR","MAT","F38",1,5,,
-2035,"2H","MIR","MAT","F38",1,7,,
-2035,"2H","MIR","MAT","F38",2,1,,
-2035,"2H","MIR","MAT","F38",3,1,,
-2035,"2H","MIR","MAT","F38",4,3,,
-2036,"2I","MOM","MAT","G44",1,1,,
-2036,"2I","MOM","MAT","G44",1,3,,
-2036,"2I","MOM","MAT","G44",2,3,,
-2036,"2I","MOM","MAT","G44",4,4,,
-2036,"2I","MOM","MAT","G44",5,4,,
-2037,"2J","SIA","MAT","C23",1,1,,
-2037,"2J","SIA","MAT","C23",1,4,,
-2037,"2J","SIA","MAT","C23",2,5,,
-2037,"2J","SIA","MAT","C23",2,6,,
-2037,"2J","SIA","MAT","C23",4,3,,
-2037,"2J","SIA","MAT","C23",5,2,,
-2038,"2K","LUN","MAT","F34",1,1,,
-2038,"2K","LUN","MAT","F34",1,5,,
-2038,"2K","LUN","MAT","F34",2,8,,
-2038,"2K","LUN","MAT","F34",4,1,,
-2038,"2K","LUN","MAT","F34",5,1,,
-2039,"2L","HOA","MAT","F32",1,2,,
-2039,"2L","HOA","MAT","F32",1,5,,
-2039,"2L","HOA","MAT","F32",2,1,,
-2039,"2L","HOA","MAT","F32",4,2,,
-2039,"2L","HOA","MAT","F32",5,4,,
-2040,"2M","MIR","MAT","F31",1,6,,
-2040,"2M","MIR","MAT","F31",2,3,,
-2040,"2M","MIR","MAT","F31",3,2,,
-2040,"2M","MIR","MAT","F31",4,5,,
-2040,"2M","MIR","MAT","F31",4,6,,
-2041,"2A","BLS","EDM","F21",1,2,,
-2041,"2A","BLS","EDM","F21",2,7,,
-2041,"2A","BLS","EDM","F21",4,2,,
-2041,"2A","BLS","EDM","F21",4,6,,
-2042,"2B","MNM","EDM","G41",1,7,,
-2042,"2B","MNM","EDM","G41",3,2,,
-2042,"2B","MNM","EDM","G41",4,2,,
-2042,"2B","MNM","EDM","G41",4,4,,
-2043,"2C","DRF","EDM","G42",1,1,,
-2043,"2C","DRF","EDM","G42",1,3,,
-2043,"2C","DRF","EDM","G42",4,6,,
-2043,"2C","DRF","EDM","G42",5,4,,
-2044,"2D","MNM","EDM","F33",1,5,,
-2044,"2D","MNM","EDM","F33",2,1,,
-2044,"2D","MNM","EDM","F33",2,2,,
-2044,"2D","MNM","EDM","F33",3,4,,
-2045,"2E","VHC","EDM","F26",1,3,,
-2045,"2E","VHC","EDM","F26",1,5,,
-2045,"2E","VHC","EDM","F26",4,3,,
-2045,"2E","VHC","EDM","F26",5,5,,
-2046,"2F","MNM","EDM","G43",1,1,,
-2046,"2F","MNM","EDM","G43",1,6,,
-2046,"2F","MNM","EDM","G43",4,7,,
-2046,"2F","MNM","EDM","G43",5,4,,
-2046,,"VHC",,,1,1,,
-2046,,"VHC",,,1,6,,
-2046,,"VHC",,,4,7,,
-2046,,"VHC",,,5,4,,
-2047,"2G","DRF","EDM","F35",1,2,,
-2047,"2G","DRF","EDM","F35",2,7,,
-2047,"2G","DRF","EDM","F35",4,5,,
-2047,"2G","DRF","EDM","F35",5,1,,
-2048,"2H","MNM","EDM","F38",1,2,,
-2048,"2H","MNM","EDM","F38",2,3,,
-2048,"2H","MNM","EDM","F38",4,1,,
-2048,"2H","MNM","EDM","F38",5,1,,
-2049,"2I","DNN","EDM","G44",1,6,,
-2049,"2I","DNN","EDM","G44",2,7,,
-2049,"2I","DNN","EDM","G44",4,3,,
-2049,"2I","DNN","EDM","G44",5,2,,
-2050,"2J","DMC","EDM","C23",1,3,,
-2050,"2J","DMC","EDM","C23",3,3,,
-2050,"2J","DMC","EDM","C23",3,4,,
-2050,"2J","DMC","EDM","C23",5,5,,
-2051,"2K","MNM","EDM","F34",1,3,,
-2051,"2K","MNM","EDM","F34",3,1,,
-2051,"2K","MNM","EDM","F34",4,3,,
-2051,"2K","MNM","EDM","F34",5,2,,
-2052,"2L","DNN","EDM","F32",1,7,,
-2052,"2L","DNN","EDM","F32",2,5,,
-2052,"2L","DNN","EDM","F32",4,1,,
-2052,"2L","DNN","EDM","F32",5,3,,
-2053,"2M","DRF","EDM","F31",3,3,,
-2053,"2M","DRF","EDM","F31",3,4,,
-2053,"2M","DRF","EDM","F31",4,2,,
-2053,"2M","DRF","EDM","F31",5,2,,
-2054,"2A","TAR","SCI","F21",3,3,,
-2054,"2A","TAR","SCI","F21",4,4,,
-2054,"2A","TAR","SCI","F21",5,3,,
-2055,"2B","TAR","SCI","G41",1,4,,
-2055,"2B","TAR","SCI","G41",2,8,,
-2055,"2B","TAR","SCI","G41",4,3,,
-2056,"2C","AKM","SCI","G42",1,2,,
-2056,"2C","AKM","SCI","G42",3,3,,
-2056,"2C","AKM","SCI","G42",4,1,,
-2057,"2D","TAR","SCI","F33",1,7,,
-2057,"2D","TAR","SCI","F33",2,5,,
-2057,"2D","TAR","SCI","F33",5,5,,
-2058,"2E","BLT","SCI","F26",2,1,,
-2058,"2E","BLT","SCI","F26",3,3,,
-2058,"2E","BLT","SCI","F26",5,1,,
-2059,"2F","AKM","SCI","G43",2,3,,
-2059,"2F","AKM","SCI","G43",4,2,,
-2059,"2F","AKM","SCI","G43",5,1,,
-2060,"2G","PHS","SCI","F35",1,1,,
-2060,"2G","PHS","SCI","F35",2,8,,
-2060,"2G","PHS","SCI","F35",4,3,,
-2061,"2H","PHS","SCI","F38",1,4,,
-2061,"2H","PHS","SCI","F38",2,6,,
-2061,"2H","PHS","SCI","F38",4,2,,
-2062,"2I","BLT","SCI","G44",1,2,,
-2062,"2I","BLT","SCI","G44",3,2,,
-2062,"2I","BLT","SCI","G44",5,5,,
-2063,"2J","SEF","SCI","C23",2,2,,
-2063,"2J","SEF","SCI","C23",4,4,,
-2063,"2J","SEF","SCI","C23",5,1,,
-2064,"2K","TAR","SCI","F34",1,2,,
-2064,"2K","TAR","SCI","F34",2,7,,
-2064,"2K","TAR","SCI","F34",3,2,,
-2065,"2L","BLT","SCI","F32",1,3,,
-2065,"2L","BLT","SCI","F32",2,4,,
-2065,"2L","BLT","SCI","F32",5,2,,
-2066,"2M","TAR","SCI","F31",1,3,,
-2066,"2M","TAR","SCI","F31",2,4,,
-2066,"2M","TAR","SCI","F31",4,7,,
-7067,"2B","MAE","ANGL","G41",2,7,,
-7072,"3A","HOA","REM",,2,8,,
-7072,"3B","HOA","REM",,2,8,,
-7072,"3C","HOA","REM",,2,8,,
-7072,"3D","HOA","REM",,2,8,,
-7072,"3E","HOA","REM",,2,8,,
-7072,"3F","HOA","REM",,2,8,,
-7072,"3G","HOA","REM",,2,8,,
-7072,"3H","HOA","REM",,2,8,,
-7072,"3I","HOA","REM",,2,8,,
-7072,"3J","HOA","REM",,2,8,,
-7072,"3K","HOA","REM",,2,8,,
-7072,"3L","HOA","REM",,2,8,,
-7072,"3A","VAS","REM","C01",2,8,,
-7072,"3B","VAS","REM","C01",2,8,,
-7072,"3C","VAS","REM","C01",2,8,,
-7072,"3D","VAS","REM","C01",2,8,,
-7072,"3E","VAS","REM","C01",2,8,,
-7072,"3F","VAS","REM","C01",2,8,,
-7072,"3G","VAS","REM","C01",2,8,,
-7072,"3H","VAS","REM","C01",2,8,,
-7072,"3I","VAS","REM","C01",2,8,,
-7072,"3J","VAS","REM","C01",2,8,,
-7072,"3K","VAS","REM","C01",2,8,,
-7072,"3A","BRM","REM",,2,8,,
-7072,"3B","BRM","REM",,2,8,,
-7072,"3C","BRM","REM",,2,8,,
-7072,"3D","BRM","REM",,2,8,,
-7072,"3E","BRM","REM",,2,8,,
-7072,"3F","BRM","REM",,2,8,,
-7072,"3G","BRM","REM",,2,8,,
-7072,"3H","BRM","REM",,2,8,,
-7072,"3I","BRM","REM",,2,8,,
-7072,"3J","BRM","REM",,2,8,,
-7072,"3K","BRM","REM",,2,8,,
-7072,"3A","MAR","REM",,2,8,,
-7072,"3B","MAR","REM",,2,8,,
-7072,"3C","MAR","REM",,2,8,,
-7072,"3D","MAR","REM",,2,8,,
-7072,"3E","MAR","REM",,2,8,,
-7072,"3F","MAR","REM",,2,8,,
-7072,"3G","MAR","REM",,2,8,,
-7072,"3H","MAR","REM",,2,8,,
-7072,"3I","MAR","REM",,2,8,,
-7072,"3J","MAR","REM",,2,8,,
-7072,"4A","LHV","REM",,2,8,,
-7072,"4B","LHV","REM",,2,8,,
-7072,"4C","LHV","REM",,2,8,,
-7072,"4D","LHV","REM",,2,8,,
-7072,"4E","LHV","REM",,2,8,,
-7072,"4F","LHV","REM",,2,8,,
-7072,"4G","LHV","REM",,2,8,,
-7072,"4H","LHV","REM",,2,8,,
-7072,"4I","LHV","REM",,2,8,,
-7072,"4J","LHV","REM",,2,8,,
-7072,"4K","LHV","REM",,2,8,,
-7072,"4L","LHV","REM",,2,8,,
-7073,"3C","GON","REM",,2,7,,
-7073,"3D","GON","REM",,2,7,,
-7073,"3E","GON","REM",,2,7,,
-7073,"3G","GON","REM",,2,7,,
-7073,"3H","GON","REM",,2,7,,
-7073,"3J","GON","REM",,2,7,,
-7073,"3K","GON","REM",,2,7,,
-7073,"3L","GON","REM",,2,7,,
-7073,,"VAS","REM",,2,7,,
-7073,,"BRM","REM",,2,7,,
-7073,"4A","HAL","REM",,2,7,,
-7073,"4D","HAL","REM",,2,7,,
-7073,"4E","HAL","REM",,2,7,,
-7073,"4G","HAL","REM",,2,7,,
-7073,"4H","HAL","REM",,2,7,,
-7073,"4J","HAL","REM",,2,7,,
-7073,"4K","HAL","REM",,2,7,,
-7073,"4L","HAL","REM",,2,7,,
-7073,,"HEE","REM",,2,7,,
-7073,,"LEP","REM",,2,7,,
-7074,"3A","MAF","REM","C01",1,8,,
-7074,"3B","MAF","REM","C01",1,8,,
-7074,"3C","MAF","REM","C01",1,8,,
-7074,"3D","MAF","REM","C01",1,8,,
-7074,"3E","MAF","REM","C01",1,8,,
-7074,"3F","MAF","REM","C01",1,8,,
-7074,"3G","MAF","REM","C01",1,8,,
-7074,"3H","MAF","REM","C01",1,8,,
-7074,"3I","MAF","REM","C01",1,8,,
-7074,"3J","MAF","REM","C01",1,8,,
-7074,"3K","MAF","REM","C01",1,8,,
-7074,"3L","MAF","REM","C01",1,8,,
-7074,"4A","ENH","REM","B21",1,8,,
-7074,"4B","ENH","REM","B21",1,8,,
-7074,"4C","ENH","REM","B21",1,8,,
-7074,"4D","ENH","REM","B21",1,8,,
-7074,"4E","ENH","REM","B21",1,8,,
-7074,"4F","ENH","REM","B21",1,8,,
-7074,"4G","ENH","REM","B21",1,8,,
-7074,"4H","ENH","REM","B21",1,8,,
-7074,"4I","ENH","REM","B21",1,8,,
-7074,"4J","ENH","REM","B21",1,8,,
-7074,"4K","ENH","REM","B21",1,8,,
-7074,"4L","ENH","REM","B21",1,8,,
-7074,"4A","BIL","REM",,1,8,,
-7074,,"MAR","REM",,1,8,,
-7075,"8E","VIV","EQUI",,5,1,,
-7075,"8E","DPT","EQUI",,5,1,,
-7076,"8C","JEC","ETUD",,4,3,,
-7076,"8C","SAL","ETUD",,4,3,,
-`;
+import { initializeApp } from 'firebase/app';
+import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from 'firebase/auth';
+import { getFirestore, doc, setDoc, onSnapshot, getDoc } from 'firebase/firestore';
 
 // Composant Modal pour afficher l'emploi du temps détaillé
 const ScheduleModal = ({ entityName, scheduleType, scheduleData, onClose }) => {
@@ -621,68 +139,222 @@ const ScheduleModal = ({ entityName, scheduleType, scheduleData, onClose }) => {
 // Clé spéciale pour les professeurs dont le sigle est manquant ou invalide
 const UNKNOWN_PROFESSOR_KEY = 'INCONNU';
 
+// Helper pour convertir les objets Set en Array pour la compatibilité Firestore
+const convertSetsToArrays = (obj) => {
+  if (Array.isArray(obj)) {
+    return obj.map(convertSetsToArrays);
+  } else if (typeof obj === 'object' && obj !== null) {
+    const newObj = {};
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        if (obj[key] instanceof Set) {
+          newObj[key] = Array.from(obj[key]);
+        } else {
+          newObj[key] = convertSetsToArrays(obj[key]);
+        }
+      }
+    }
+    return newObj;
+  }
+  return obj;
+};
+
 function App() {
-  const [professorHours, setProfessorHours] = useState({}); // Total hours for professors (unique slots)
-  const [allSchedules, setAllSchedules] = useState({ professors: {}, classes: {}, rooms: {} }); // Detailed schedules for all entities
+  const [professorHours, setProfessorHours] = useState({});
+  const [allSchedules, setAllSchedules] = useState({ professors: {}, classes: {}, rooms: {} });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState('professors'); // 'professors', 'classes', 'rooms'
-  const [selectedEntity, setSelectedEntity] = useState(null); // Name of selected professor, class, or room
+  const [activeTab, setActiveTab] = useState('professors');
+  const [selectedEntity, setSelectedEntity] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [fileName, setFileName] = useState("Aucun fichier sélectionné"); // Pour afficher le nom du fichier
+  const [fileName, setFileName] = useState("Aucun fichier sélectionné");
+  const [fileUrl, setFileUrl] = useState(''); // État pour l'URL du fichier
 
+  // Firebase states
+  const [db, setDb] = useState(null);
+  const [userId, setUserId] = useState(null);
+  const [isAuthReady, setIsAuthReady] = useState(false);
+  const [uploaderId, setUploaderId] = useState(null); // ID de l'utilisateur qui a uploadé le fichier (pour info, pas pour permission)
+  const [authorizedUploaderIds, setAuthorizedUploaderIds] = useState([]); // Nouvelle liste des UIDs autorisés
+
+  // Initialisation de Firebase et authentification
   useEffect(() => {
-    // Charge le contenu pré-défini au démarrage si aucun fichier n'a été chargé
-    // Cela permet à l'application d'être fonctionnelle sans téléchargement initial
-    processFileContent(preloadedFileContent);
+    try {
+      const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+      const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+
+      if (Object.keys(firebaseConfig).length === 0) {
+        console.error("Firebase config is empty. Cannot initialize Firebase.");
+        setError("Configuration Firebase manquante. L'application ne peut pas se connecter à la base de données.");
+        setLoading(false);
+        return;
+      }
+
+      const app = initializeApp(firebaseConfig);
+      const firestoreDb = getFirestore(app);
+      const firebaseAuth = getAuth(app);
+
+      setDb(firestoreDb);
+
+      const unsubscribe = onAuthStateChanged(firebaseAuth, async (user) => {
+        if (user) {
+          setUserId(user.uid);
+        } else {
+          try {
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+              await signInWithCustomToken(firebaseAuth, __initial_auth_token);
+            } else {
+              await signInAnonymously(firebaseAuth);
+            }
+          } catch (anonError) {
+            console.error("Erreur lors de la connexion anonyme ou avec jeton:", anonError);
+            setError("Erreur d'authentification. L'application pourrait ne pas fonctionner correctement.");
+          }
+        }
+        setIsAuthReady(true);
+      });
+
+      return () => unsubscribe();
+    } catch (err) {
+      console.error("Erreur lors de l'initialisation de Firebase:", err);
+      setError("Erreur lors de l'initialisation de Firebase. Vérifiez votre configuration.");
+      setLoading(false);
+    }
   }, []);
 
-  /**
-   * Gère le changement de fichier via l'input de type 'file'.
-   * Lit le contenu du fichier et le passe à processFileContent.
-   * @param {Event} event L'événement de changement de fichier.
-   */
-  const handleFileChange = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      setFileName(file.name);
-      setLoading(true);
-      setError(null);
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          processFileContent(e.target.result);
-        } catch (err) {
-          console.error("Erreur lors de la lecture du fichier:", err);
-          setError("Erreur lors de la lecture du fichier. Veuillez vous assurer que c'est un fichier texte valide.");
-          setLoading(false);
-        }
-      };
-      reader.onerror = () => {
-        setError("Impossible de lire le fichier.");
+  // Chargement des données des horaires depuis Firestore
+  useEffect(() => {
+    if (!db || !isAuthReady) return;
+
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+    const scheduleDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'schedules', 'main-schedule');
+
+    const unsubscribe = onSnapshot(scheduleDocRef, (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setProfessorHours(data.professorHours || {});
+        setAllSchedules(data.allSchedules || { professors: {}, classes: {}, rooms: {} });
+        setUploaderId(data.uploaderId || null); // Conserve l'ID du dernier uploader pour information
         setLoading(false);
-      };
-      reader.readAsText(file);
-    } else {
-      setFileName("Aucun fichier sélectionné");
+      } else {
+        console.log("Aucun emploi du temps trouvé dans Firestore. Le premier upload le créera.");
+        setLoading(false);
+        setProfessorHours({});
+        setAllSchedules({ professors: {}, classes: {}, rooms: {} });
+        setUploaderId(null);
+      }
+    }, (dbError) => {
+      console.error("Erreur lors du chargement des données d'horaires depuis Firestore:", dbError);
+      setError("Impossible de charger les données d'horaires. Veuillez réessayer.");
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [db, isAuthReady]);
+
+  // Chargement de la liste des UIDs autorisés depuis Firestore
+  useEffect(() => {
+    if (!db || !isAuthReady) return;
+
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+    const authorizedUploaderDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'authorized_uploaders', 'list');
+
+    const unsubscribe = onSnapshot(authorizedUploaderDocRef, (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setAuthorizedUploaderIds(data.uids || []);
+      } else {
+        console.log("Document 'authorized_uploaders/list' non trouvé. Il doit être créé manuellement.");
+        setAuthorizedUploaderIds([]);
+      }
+    }, (dbError) => {
+      console.error("Erreur lors du chargement des UIDs autorisés:", dbError);
+      // Ne pas définir d'erreur critique ici pour ne pas bloquer l'app si la liste n'est pas trouvée
+    });
+
+    return () => unsubscribe();
+  }, [db, isAuthReady]);
+
+  /**
+   * Sauvegarde les données traitées dans Firestore.
+   * @param {object} hoursData Les heures totales des professeurs.
+   * @param {object} schedulesData Les emplois du temps détaillés.
+   * @param {string} currentUserId L'ID de l'utilisateur actuel.
+   */
+  const saveScheduleToFirestore = async (hoursData, schedulesData, currentUserId) => {
+    if (!db || !currentUserId) {
+      setError("Base de données non prête ou utilisateur non identifié pour la sauvegarde.");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+    const scheduleDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'schedules', 'main-schedule');
+    const authorizedUploaderDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'authorized_uploaders', 'list');
+
+    try {
+      const schedulesDataForFirestore = convertSetsToArrays(schedulesData);
+
+      // Vérifier si le document 'main-schedule' existe déjà
+      const scheduleDocSnap = await getDoc(scheduleDocRef); // Utilisez getDoc ici pour vérifier l'existence
+      const isFirstUpload = !scheduleDocSnap.exists();
+
+      await setDoc(scheduleDocRef, {
+        professorHours: hoursData,
+        allSchedules: schedulesDataForFirestore,
+        uploaderId: currentUserId, // L'ID de la personne qui vient d'uploader
+        lastUpdatedBy: currentUserId,
+        lastUpdatedAt: new Date().toISOString()
+      });
+      console.log("Données sauvegardées avec succès dans Firestore !");
+
+      // Si c'est le tout premier upload, ajoutez l'UID de l'utilisateur actuel à la liste des uploaders autorisés
+      if (isFirstUpload) {
+        const authorizedUploaderDocSnap = await getDoc(authorizedUploaderDocRef);
+        let updatedAuthorizedUids = [];
+
+        if (authorizedUploaderDocSnap.exists()) {
+          // Si le document existe, ajoutez l'UID à la liste existante si pas déjà présent
+          const existingUids = authorizedUploaderDocSnap.data().uids || [];
+          if (!existingUids.includes(currentUserId)) {
+            updatedAuthorizedUids = [...existingUids, currentUserId];
+          } else {
+            // If it already exists, just use the existing ones
+            updatedAuthorizedUids = existingUids;
+          }
+        } else {
+          // Si le document n'existe pas, créez-le avec l'UID de l'utilisateur actuel
+          updatedAuthorizedUids = [currentUserId];
+        }
+        await setDoc(authorizedUploaderDocRef, { uids: updatedAuthorizedUids });
+        setAuthorizedUploaderIds(updatedAuthorizedUids); // Mettre à jour l'état local
+        console.log("UID de l'uploader ajouté à la liste des autorisés.");
+      }
+
+      setUploaderId(currentUserId); // Met à jour l'ID de l'uploader localement
+    } catch (saveError) {
+      console.error("Erreur lors de la sauvegarde dans Firestore:", saveError);
+      setError("Erreur lors de la sauvegarde des données. Veuillez réessayer.");
+    } finally {
+      setLoading(false);
     }
   };
 
+
   /**
-   * Traite le contenu du fichier pour extraire les heures de cours et l'emploi du temps détaillé par professeur, classe et local.
-   * Les lignes sans sigle de professeur valide sont attribuées à 'INCONNU'.
-   * Les heures des professeurs sont comptées par slot unique (numéro de cours, jour, heure).
+   * Traite le contenu du fichier pour extraire les heures de cours et l'emploi du temps détaillé.
+   * Appelle saveScheduleToFirestore après traitement.
    * @param {string} content Le contenu textuel du fichier.
    */
-  const processFileContent = (content) => {
+  const processFileContent = async (content) => {
     setLoading(true);
     setError(null);
-    const uniqueProfessorSlots = {}; // { 'PROF': Set('courseNum-day-hour') } - pour le total des heures
-
-    // Structures temporaires pour collecter les entrées brutes avant regroupement
-    const professorRawEntries = {}; // { 'PROF': [entry, ...] }
-    const classRawEntries = {};     // { 'CLASS': [entry, ...] }
-    const roomRawEntries = {};      // { 'ROOM': [entry, ...] }
+    const uniqueProfessorSlots = {};
+    const professorRawEntries = {};
+    const classRawEntries = {};
+    const roomRawEntries = {};
 
     try {
       const lines = content.split('\n');
@@ -694,28 +366,14 @@ function App() {
         const parts = line.split(',');
 
         if (parts.length < 7) {
-          // Gérer les lignes mal formées en les attribuant à 'INCONNU'
           const defaultEntry = {
-            courseNumber: 'N/A',
-            class: 'N/A',
-            professorName: UNKNOWN_PROFESSOR_KEY,
-            course: 'N/A',
-            room: 'N/A',
-            day: '0',
-            hour: '0'
+            courseNumber: 'N/A', class: 'N/A', professorName: UNKNOWN_PROFESSOR_KEY,
+            course: 'N/A', room: 'N/A', day: '0', hour: '0'
           };
-
-          // Ajouter aux entrées brutes pour le professeur INCONNU
           if (!professorRawEntries[UNKNOWN_PROFESSOR_KEY]) professorRawEntries[UNKNOWN_PROFESSOR_KEY] = [];
           professorRawEntries[UNKNOWN_PROFESSOR_KEY].push(defaultEntry);
-
-          // Ajouter aux slots uniques pour le comptage des heures du professeur INCONNU
-          if (!uniqueProfessorSlots[UNKNOWN_PROFESSOR_KEY]) {
-            uniqueProfessorSlots[UNKNOWN_PROFESSOR_KEY] = new Set();
-          }
-          // Pour les lignes mal formées, l'identifiant de slot doit être unique pour ne pas les fusionner
+          if (!uniqueProfessorSlots[UNKNOWN_PROFESSOR_KEY]) uniqueProfessorSlots[UNKNOWN_PROFESSOR_KEY] = new Set();
           uniqueProfessorSlots[UNKNOWN_PROFESSOR_KEY].add(`N/A-0-0-${Date.now()}-${Math.random()}`);
-
           console.warn(`Ligne mal formée ou incomplète (moins de 7 champs) : "${line}". Attribuée à INCONNU.`);
           return;
         }
@@ -734,16 +392,10 @@ function App() {
         }
 
         const entry = {
-          courseNumber: courseNumber,
-          class: className,
-          professorName: professorName,
-          course: courseName,
-          room: roomName,
-          day: day,
-          hour: hour
+          courseNumber: courseNumber, class: className, professorName: professorName,
+          course: courseName, room: roomName, day: day, hour: hour
         };
 
-        // Collecter les entrées brutes pour chaque type d'entité
         if (!professorRawEntries[professorName]) professorRawEntries[professorName] = [];
         professorRawEntries[professorName].push(entry);
 
@@ -757,62 +409,42 @@ function App() {
           roomRawEntries[roomName].push(entry);
         }
 
-        // Mettre à jour les slots uniques pour le total des heures des professeurs
         if (!uniqueProfessorSlots[professorName]) {
           uniqueProfessorSlots[professorName] = new Set();
         }
         uniqueProfessorSlots[professorName].add(`${courseNumber}-${day}-${hour}`);
       });
 
-      // --- Traitement des données brutes pour créer les emplois du temps regroupés ---
-      const finalAllSchedules = {
-        professors: {},
-        classes: {},
-        rooms: {}
-      };
+      const finalAllSchedules = { professors: {}, classes: {}, rooms: {} };
 
-      // 1. Regroupement pour les professeurs (par numéro de cours, jour, heure)
       for (const prof in professorRawEntries) {
-        const groupedSlots = {}; // Key: 'courseNum-day-hour'
+        const groupedSlots = {};
         professorRawEntries[prof].forEach(entry => {
           const slotKey = `${entry.courseNumber}-${entry.day}-${entry.hour}`;
           if (!groupedSlots[slotKey]) {
             groupedSlots[slotKey] = {
-              courseNumber: entry.courseNumber,
-              day: entry.day,
-              hour: entry.hour,
-              course: entry.course,
-              room: entry.room,
-              classes: new Set(),
-              professorName: entry.professorName
+              courseNumber: entry.courseNumber, day: entry.day, hour: entry.hour,
+              course: entry.course, room: entry.room, classes: new Set(), professorName: entry.professorName
             };
           }
           groupedSlots[slotKey].classes.add(entry.class);
         });
         finalAllSchedules.professors[prof] = Object.values(groupedSlots).map(groupedEntry => ({
-          courseNumber: groupedEntry.courseNumber, // Garder pour la logique, même si non affiché
-          day: groupedEntry.day,
-          hour: groupedEntry.hour,
-          course: groupedEntry.course,
-          room: groupedEntry.room,
-          class: Array.from(groupedEntry.classes).sort().join(', '),
+          courseNumber: groupedEntry.courseNumber, day: groupedEntry.day, hour: groupedEntry.hour,
+          course: groupedEntry.course, room: groupedEntry.room,
+          class: Array.from(groupedEntry.classes).sort().join(', '), // Pour l'affichage
           professorName: groupedEntry.professorName
         }));
       }
 
-      // 2. Regroupement pour les classes (par jour, heure)
       for (const cls in classRawEntries) {
-        const groupedSlots = {}; // Key: 'day-hour'
+        const groupedSlots = {};
         classRawEntries[cls].forEach(entry => {
           const slotKey = `${entry.day}-${entry.hour}`;
           if (!groupedSlots[slotKey]) {
             groupedSlots[slotKey] = {
-              day: entry.day,
-              hour: entry.hour,
-              class: entry.class,
-              professorNames: new Set(),
-              courses: new Set(),
-              rooms: new Set()
+              day: entry.day, hour: entry.hour, class: entry.class,
+              professorNames: new Set(), courses: new Set(), rooms: new Set()
             };
           }
           groupedSlots[slotKey].professorNames.add(entry.professorName);
@@ -820,28 +452,21 @@ function App() {
           groupedSlots[slotKey].rooms.add(entry.room);
         });
         finalAllSchedules.classes[cls] = Object.values(groupedSlots).map(groupedEntry => ({
-          day: groupedEntry.day,
-          hour: groupedEntry.hour,
-          class: groupedEntry.class,
+          day: groupedEntry.day, hour: groupedEntry.hour, class: groupedEntry.class,
           professorName: Array.from(groupedEntry.professorNames).sort().join(', '),
           course: Array.from(groupedEntry.courses).sort().join(', '),
           room: Array.from(groupedEntry.rooms).sort().join(', ')
         }));
       }
 
-      // 3. Regroupement pour les locaux (par jour, heure)
       for (const room in roomRawEntries) {
-        const groupedSlots = {}; // Key: 'day-hour'
+        const groupedSlots = {};
         roomRawEntries[room].forEach(entry => {
           const slotKey = `${entry.day}-${entry.hour}`;
           if (!groupedSlots[slotKey]) {
             groupedSlots[slotKey] = {
-              day: entry.day,
-              hour: entry.hour,
-              room: entry.room,
-              classes: new Set(),
-              professorNames: new Set(),
-              courses: new Set()
+              day: entry.day, hour: entry.hour, room: entry.room,
+              classes: new Set(), professorNames: new Set(), courses: new Set()
             };
           }
           groupedSlots[slotKey].classes.add(entry.class);
@@ -849,16 +474,13 @@ function App() {
           groupedSlots[slotKey].courses.add(entry.course);
         });
         finalAllSchedules.rooms[room] = Object.values(groupedSlots).map(groupedEntry => ({
-          day: groupedEntry.day,
-          hour: groupedEntry.hour,
-          room: groupedEntry.room,
+          day: groupedEntry.day, hour: groupedEntry.hour, room: groupedEntry.room,
           class: Array.from(groupedEntry.classes).sort().join(', '),
           professorName: Array.from(groupedEntry.professorNames).sort().join(', '),
           course: Array.from(groupedEntry.courses).sort().join(', ')
         }));
       }
 
-      // Calculer le total des heures pour chaque professeur à partir des slots uniques
       const finalProfessorHoursMap = {};
       for (const prof in uniqueProfessorSlots) {
         finalProfessorHoursMap[prof] = uniqueProfessorSlots[prof].size;
@@ -866,13 +488,79 @@ function App() {
 
       setProfessorHours(finalProfessorHoursMap);
       setAllSchedules(finalAllSchedules);
+
+      // Sauvegarder dans Firestore après un traitement réussi
+      if (userId) { // S'assurer que l'utilisateur est authentifié pour sauvegarder
+        await saveScheduleToFirestore(finalProfessorHoursMap, finalAllSchedules, userId);
+      } else {
+        setError("Impossible de sauvegarder : utilisateur non authentifié.");
+        setLoading(false);
+      }
+
     } catch (err) {
       console.error("Erreur lors du traitement du fichier:", err);
       setError("Erreur lors du traitement du fichier. Veuillez vérifier le format.");
-    } finally {
       setLoading(false);
     }
   };
+
+  /**
+   * Gère le changement de fichier via l'input de type 'file'.
+   * Lit le contenu du fichier et le passe à processFileContent.
+   * @param {Event} event L'événement de changement de fichier.
+   */
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setFileName(file.name);
+      setLoading(true);
+      setError(null);
+      const reader = new FileReader();
+      reader.onload = async (e) => { // Rendre async pour await processFileContent
+        try {
+          await processFileContent(e.target.result);
+        } catch (err) {
+          console.error("Erreur lors de la lecture ou du traitement du fichier:", err);
+          setError("Erreur lors de la lecture ou du traitement du fichier. Veuillez vous assurer que c'est un fichier texte valide.");
+          setLoading(false);
+        }
+      };
+      reader.onerror = () => {
+        setError("Impossible de lire le fichier.");
+        setLoading(false);
+      };
+      reader.readAsText(file);
+    } else {
+      setFileName("Aucun fichier sélectionné");
+    }
+  };
+
+  /**
+   * Gère le téléchargement du fichier depuis une URL.
+   */
+  const handleFetchFileFromUrl = async () => {
+    if (!fileUrl) {
+      setError("Veuillez saisir une URL de fichier.");
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    console.log("Tentative de chargement depuis l'URL:", fileUrl); // Log the URL being fetched
+    try {
+      const response = await fetch(fileUrl);
+      if (!response.ok) {
+        throw new Error(`Erreur HTTP: ${response.status} - ${response.statusText}`);
+      }
+      const textContent = await response.text();
+      await processFileContent(textContent);
+      setFileName(`Fichier chargé depuis URL: ${fileUrl}`); // Mettre à jour le nom du fichier pour l'affichage
+    } catch (err) {
+      console.error("Erreur lors du chargement du fichier depuis l'URL:", err);
+      setError(`Impossible de charger le fichier depuis l'URL : ${err.message}. Veuillez vérifier l'URL et les permissions CORS.`);
+      setLoading(false);
+    }
+  };
+
 
   // Fonction pour ouvrir la modale avec l'emploi du temps de l'entité sélectionnée
   const openScheduleModal = (name, type) => {
@@ -922,6 +610,16 @@ function App() {
 
   const currentData = getSortedData(activeTab);
 
+  // Déterminer si l'utilisateur actuel est un uploader autorisé
+  const isCurrentUserAuthorizedUploader = userId && authorizedUploaderIds.includes(userId);
+  // Permettre le premier upload si aucun horaire n'a été uploadé ET aucune liste d'uploaders n'existe
+  // OU si l'utilisateur actuel est dans la liste des uploaders autorisés.
+  const canUpload = userId && (
+    (Object.keys(professorHours).length === 0 && authorizedUploaderIds.length === 0) || // Permet le tout premier upload
+    isCurrentUserAuthorizedUploader
+  );
+
+
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4 font-sans">
       <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-2xl">
@@ -929,22 +627,69 @@ function App() {
           Gestion des Horaires
         </h1>
 
-        {/* Section de téléchargement de fichier */}
-        <div className="mb-6 p-4 border border-blue-200 bg-blue-50 rounded-lg flex flex-col items-center">
-          <label htmlFor="file-upload" className="cursor-pointer bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out shadow-md">
-            Choisir un fichier Untis (.TXT)
-          </label>
-          <input
-            id="file-upload"
-            type="file"
-            accept=".txt"
-            onChange={handleFileChange}
-            className="hidden"
-          />
-          <span className="mt-3 text-gray-700 text-sm">{fileName}</span>
-          {error && <p className="text-red-600 mt-2 text-sm">{error}</p>}
-        </div>
+        {/* Section de téléchargement de fichier (conditionnelle) */}
+        {canUpload ? (
+          <div className="mb-6 p-4 border border-blue-200 bg-blue-50 rounded-lg flex flex-col items-center">
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">Mettre à jour les horaires</h2>
 
+            {/* Téléchargement manuel de fichier */}
+            <div className="w-full mb-4">
+              <label htmlFor="file-upload" className="cursor-pointer bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out shadow-md">
+                Choisir un fichier Untis (.TXT)
+              </label>
+              <input
+                id="file-upload"
+                type="file"
+                accept=".txt"
+                onChange={handleFileChange}
+                className="hidden"
+                disabled={loading}
+              />
+              <span className="mt-3 text-gray-700 text-sm block text-center">{fileName}</span>
+            </div>
+
+            {/* Séparateur */}
+            <div className="w-full border-b border-gray-300 my-4 text-center">
+              <span className="bg-white px-2 text-gray-500 text-sm">OU</span>
+            </div>
+
+            {/* Mise à jour via URL */}
+            <div className="w-full">
+              <label htmlFor="file-url" className="block text-gray-700 text-sm font-bold mb-2">
+                URL du fichier texte :
+              </label>
+              <input
+                type="url"
+                id="file-url"
+                value={fileUrl}
+                onChange={(e) => setFileUrl(e.target.value)}
+                placeholder="Ex: https://example.com/horaires.txt"
+                className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-3"
+                disabled={loading}
+              />
+              <button
+                onClick={handleFetchFileFromUrl}
+                className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out shadow-md w-full"
+                disabled={loading}
+              >
+                Charger depuis l'URL
+              </button>
+            </div>
+
+            {loading && <p className="text-blue-600 mt-4">Traitement en cours...</p>}
+            {error && <p className="text-red-600 mt-4 text-sm">{error}</p>}
+          </div>
+        ) : (
+          <div className="mb-6 p-4 border border-gray-200 bg-gray-50 rounded-lg text-center text-gray-700">
+            <p className="font-semibold">Mode consultation uniquement.</p>
+            <p className="text-sm">Seuls les utilisateurs autorisés peuvent télécharger les fichiers.</p>
+            {authorizedUploaderIds.length > 0 && (
+              <p className="text-xs text-gray-500 mt-1">
+                UIDs autorisés : {authorizedUploaderIds.join(', ')}
+              </p>
+            )}
+          </div>
+        )}
 
         {/* Onglets de navigation */}
         <div className="flex justify-center mb-6 border-b border-gray-200">
@@ -980,8 +725,10 @@ function App() {
           </button>
         </div>
 
-        {loading ? (
-          <p className="text-center text-blue-600">Chargement et traitement du fichier...</p>
+        {loading && !error ? (
+          <p className="text-center text-blue-600">Chargement des données...</p>
+        ) : error ? (
+          <p className="text-center text-red-600">{error}</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full bg-white border border-gray-200 rounded-lg">
@@ -1055,6 +802,21 @@ function App() {
           <p className="mt-2">
             Cliquez sur le nom d'une entité (professeur, classe ou local) dans le tableau pour afficher son emploi du temps détaillé.
           </p>
+          <div className="mt-4 pt-2 border-t border-blue-300">
+            <p className="font-semibold">Informations utilisateur (pour le débogage) :</p>
+            <p>Votre ID utilisateur actuel : <span className="font-mono text-gray-700 break-all">{userId || "Non connecté"}</span></p>
+            <p>ID du dernier uploader : <span className="font-mono text-gray-700 break-all">{uploaderId || "Non défini"}</span></p>
+            <p>UIDs autorisés à uploader : <span className="font-mono text-gray-700 break-all">{authorizedUploaderIds.length > 0 ? authorizedUploaderIds.join(', ') : "Aucun défini (le premier upload définira le premier autorisé)"}</span></p>
+            {userId && isCurrentUserAuthorizedUploader && (
+              <p className="text-green-700 font-semibold">Vous êtes un uploader autorisé.</p>
+            )}
+            {userId && !isCurrentUserAuthorizedUploader && authorizedUploaderIds.length > 0 && (
+              <p className="text-red-700 font-semibold">Vous n'êtes pas un uploader autorisé.</p>
+            )}
+            {!userId && (
+              <p className="text-orange-700 font-semibold">En attente de connexion ou connexion anonyme.</p>
+            )}
+          </div>
         </div>
       </div>
 
