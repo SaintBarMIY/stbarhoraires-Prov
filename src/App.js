@@ -1,4 +1,4 @@
-/* global __initial_auth_token */ // __app_id et __firebase_config sont maintenant accédés via process.env
+/* global __app_id, __firebase_config, __initial_auth_token */
 import React, { useState, useEffect } from 'react';
 import { initializeApp } from 'firebase/app';
 import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from 'firebase/auth';
@@ -161,7 +161,7 @@ const convertSetsToArrays = (obj) => {
 
 function App() {
   // Déclaration de appId au début du composant pour qu'il soit accessible globalement
-  // Utilisation de process.env pour accéder aux variables d'environnement Netlify
+  // Utilisation directe des variables globales fournies par l'environnement Canvas
   const appId = typeof process.env.REACT_APP_APP_ID !== 'undefined' ? process.env.REACT_APP_APP_ID : 'default-app-id';
 
   const [professorHours, setProfessorHours] = useState({});
@@ -184,7 +184,7 @@ function App() {
   // Initialisation de Firebase et authentification
   useEffect(() => {
     try {
-      // Utilisation de process.env.REACT_APP_FIREBASE_CONFIG
+      // Utilisation directe de __firebase_config
       const firebaseConfig = JSON.parse(typeof process.env.REACT_APP_FIREBASE_CONFIG !== 'undefined' ? process.env.REACT_APP_FIREBASE_CONFIG : '{}');
 
       if (Object.keys(firebaseConfig).length === 0) {
@@ -212,7 +212,7 @@ function App() {
             }
           } catch (anonError) {
             console.error("Erreur lors de la connexion anonyme ou avec jeton:", anonError);
-            setError("Erreur d'authentification. L'application pourrait ne pas fonctionner correctement.");
+            setError("Erreur d'authentification. L'application pourrait ne pas fonctionner correctement. Vérifiez les méthodes de connexion Firebase.");
           }
         }
         setIsAuthReady(true);
@@ -541,6 +541,7 @@ function App() {
 
   /**
    * Gère le téléchargement du fichier depuis une URL.
+   *
    */
   const handleFetchFileFromUrl = async () => {
     if (!fileUrl) {
