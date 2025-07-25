@@ -161,7 +161,8 @@ const convertSetsToArrays = (obj) => {
 
 function App() {
   // Déclaration de appId au début du composant pour qu'il soit accessible globalement
-  const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+  // Utilisation directe des variables globales fournies par l'environnement Canvas
+  const appId = typeof process.env.REACT_APP_APP_ID !== 'undefined' ? process.env.REACT_APP_APP_ID : 'default-app-id';
 
   const [professorHours, setProfessorHours] = useState({});
   const [allSchedules, setAllSchedules] = useState({ professors: {}, classes: {}, rooms: {} });
@@ -169,7 +170,7 @@ function App() {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('professors');
   const [selectedEntity, setSelectedEntity] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false); // Correction ici: suppression du '=' et du ';'
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [fileName, setFileName] = useState("Aucun fichier sélectionné");
   const [fileUrl, setFileUrl] = useState(''); // État pour l'URL du fichier
 
@@ -183,10 +184,10 @@ function App() {
   // Initialisation de Firebase et authentification
   useEffect(() => {
     try {
-      // Utilisation de appId déjà déclarée
-      const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-
-      if (Object.keys(firebaseConfig).length === 0) {
+      // Utilisation directe de __firebase_config
+      const firebaseConfig = JSON.parse(typeof process.env.REACT_APP_FIREBASE_CONFIG !== 'undefined' ? process.env.REACT_APP_FIREBASE_CONFIG : '{}');
+      
+	if (Object.keys(firebaseConfig).length === 0) {
         console.error("Firebase config is empty. Cannot initialize Firebase.");
         setError("Configuration Firebase manquante. L'application ne peut pas se connecter à la base de données.");
         setLoading(false);
@@ -293,7 +294,7 @@ function App() {
     setLoading(true);
     setError(null);
 
-    // Suppression de la déclaration redondante de appId ici
+    // Utilisation de appId déjà déclarée
     const scheduleDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'schedules', 'main-schedule');
     const authorizedUploaderDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'authorized_uploaders', 'list');
 
