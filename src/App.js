@@ -1,4 +1,4 @@
-/* global __app_id, __firebase_config, __initial_auth_token */
+/* global __initial_auth_token */ // __app_id et __firebase_config sont maintenant accédés via process.env
 import React, { useState, useEffect } from 'react';
 import { initializeApp } from 'firebase/app';
 import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from 'firebase/auth';
@@ -161,7 +161,7 @@ const convertSetsToArrays = (obj) => {
 
 function App() {
   // Déclaration de appId au début du composant pour qu'il soit accessible globalement
-  // Utilisation directe des variables globales fournies par l'environnement Canvas
+  // Utilisation de process.env pour accéder aux variables d'environnement Netlify
   const appId = typeof process.env.REACT_APP_APP_ID !== 'undefined' ? process.env.REACT_APP_APP_ID : 'default-app-id';
 
   const [professorHours, setProfessorHours] = useState({});
@@ -184,10 +184,10 @@ function App() {
   // Initialisation de Firebase et authentification
   useEffect(() => {
     try {
-      // Utilisation directe de __firebase_config
+      // Utilisation de process.env.REACT_APP_FIREBASE_CONFIG
       const firebaseConfig = JSON.parse(typeof process.env.REACT_APP_FIREBASE_CONFIG !== 'undefined' ? process.env.REACT_APP_FIREBASE_CONFIG : '{}');
-      
-	if (Object.keys(firebaseConfig).length === 0) {
+
+      if (Object.keys(firebaseConfig).length === 0) {
         console.error("Firebase config is empty. Cannot initialize Firebase.");
         setError("Configuration Firebase manquante. L'application ne peut pas se connecter à la base de données.");
         setLoading(false);
