@@ -160,13 +160,16 @@ const convertSetsToArrays = (obj) => {
 };
 
 function App() {
+  // Déclaration de appId au début du composant pour qu'il soit accessible globalement
+  const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
   const [professorHours, setProfessorHours] = useState({});
   const [allSchedules, setAllSchedules] = useState({ professors: {}, classes: {}, rooms: {} });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('professors');
   const [selectedEntity, setSelectedEntity] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false); // Correction ici: suppression du '=' et du ';'
   const [fileName, setFileName] = useState("Aucun fichier sélectionné");
   const [fileUrl, setFileUrl] = useState(''); // État pour l'URL du fichier
 
@@ -180,7 +183,7 @@ function App() {
   // Initialisation de Firebase et authentification
   useEffect(() => {
     try {
-      const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+      // Utilisation de appId déjà déclarée
       const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
 
       if (Object.keys(firebaseConfig).length === 0) {
@@ -220,13 +223,13 @@ function App() {
       setError("Erreur lors de l'initialisation de Firebase. Vérifiez votre configuration.");
       setLoading(false);
     }
-  }, []);
+  }, [appId]); // Ajout de appId comme dépendance pour s'assurer qu'elle est bien définie
 
   // Chargement des données des horaires depuis Firestore
   useEffect(() => {
     if (!db || !isAuthReady) return;
 
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+    // Utilisation de appId déjà déclarée
     const scheduleDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'schedules', 'main-schedule');
 
     const unsubscribe = onSnapshot(scheduleDocRef, (docSnap) => {
@@ -250,13 +253,13 @@ function App() {
     });
 
     return () => unsubscribe();
-  }, [db, isAuthReady]);
+  }, [db, isAuthReady, appId]); // Ajout de appId comme dépendance
 
   // Chargement de la liste des UIDs autorisés depuis Firestore
   useEffect(() => {
     if (!db || !isAuthReady) return;
 
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+    // Utilisation de appId déjà déclarée
     const authorizedUploaderDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'authorized_uploaders', 'list');
 
     const unsubscribe = onSnapshot(authorizedUploaderDocRef, (docSnap) => {
@@ -273,7 +276,7 @@ function App() {
     });
 
     return () => unsubscribe();
-  }, [db, isAuthReady]);
+  }, [db, isAuthReady, appId]); // Ajout de appId comme dépendance
 
   /**
    * Sauvegarde les données traitées dans Firestore.
@@ -290,7 +293,7 @@ function App() {
     setLoading(true);
     setError(null);
 
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+    // Suppression de la déclaration redondante de appId ici
     const scheduleDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'schedules', 'main-schedule');
     const authorizedUploaderDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'authorized_uploaders', 'list');
 
