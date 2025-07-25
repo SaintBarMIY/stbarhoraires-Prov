@@ -1,4 +1,4 @@
-/* global __initial_auth_token */ // __initial_auth_token est une variable spécifique à l'environnement Canvas, elle sera undefined sur Netlify et la connexion anonyme sera utilisée.
+/* global __initial_auth_token */ // Cette variable est spécifique à l'environnement Canvas. Elle sera undefined sur Netlify et la connexion anonyme sera utilisée.
 import React, { useState, useEffect } from 'react';
 import { initializeApp } from 'firebase/app';
 import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from 'firebase/auth';
