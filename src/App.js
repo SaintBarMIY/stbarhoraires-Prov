@@ -162,7 +162,10 @@ const convertSetsToArrays = (obj) => {
 function App() {
   // Déclaration de appId au début du composant pour qu'il soit accessible globalement
   // Utilisation de process.env pour accéder aux variables d'environnement Netlify
-  const appId = typeof process.env.REACT_APP_APP_ID !== 'undefined' ? process.env.REACT_APP_APP_ID : 'default-app-id';
+  // ---
+  // CORRECTION : Nous changeons l'ID de l'application pour que cette version "définitive" ait sa propre base de données.
+  const appId = typeof process.env.REACT_APP_APP_ID !== 'undefined' ? process.env.REACT_APP_APP_ID : 'horaires-definitifs';
+  // ---
 
   const [professorHours, setProfessorHours] = useState({});
   const [allSchedules, setAllSchedules] = useState({ professors: {}, classes: {}, rooms: {} });
@@ -746,33 +749,38 @@ function App() {
                     {activeTab === 'classes' && 'Nom de la Classe'}
                     {activeTab === 'rooms' && 'Nom du Local'}
                   </th>
-                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider rounded-tr-lg">
-                    Total des Heures
+                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                    Heures
+                  </th>
+                  <th className="py-3 px-4 text-right text-sm font-semibold text-gray-700 uppercase tracking-wider rounded-tr-lg">
+                    Détails
                   </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {currentData.length > 0 ? (
                   currentData.map((item, index) => (
-                    <tr
-                      key={item.name}
-                      className={`cursor-pointer hover:bg-blue-100 transition duration-150 ease-in-out ${
-                        index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
-                      }`}
-                      onClick={() => openScheduleModal(item.name, activeTab)}
-                    >
-                      <td className="py-3 px-4 whitespace-nowrap text-sm text-gray-800 font-medium">
+                    <tr key={index} className="hover:bg-gray-50 transition-colors duration-150">
+                      <td className="py-4 px-4 text-sm font-medium text-gray-900">
                         {item.name}
                       </td>
-                      <td className="py-3 px-4 whitespace-nowrap text-sm text-gray-800">
+                      <td className="py-4 px-4 text-sm text-gray-500">
                         {item.hours}
+                      </td>
+                      <td className="py-4 px-4 text-right">
+                        <button
+                          onClick={() => openScheduleModal(item.name, activeTab)}
+                          className="bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold py-1 px-3 rounded-full shadow transition duration-150 ease-in-out"
+                        >
+                          Voir
+                        </button>
                       </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="2" className="py-4 text-center text-gray-500">
-                      Aucune donnée trouvée pour cette catégorie.
+                    <td colSpan="3" className="py-8 text-center text-gray-500">
+                      Aucune donnée disponible. Veuillez télécharger un fichier.
                     </td>
                   </tr>
                 )}
@@ -781,53 +789,19 @@ function App() {
           </div>
         )}
 
-        <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
-          <p className="font-semibold mb-2">Note sur le traitement du fichier :</p>
-          <ul className="list-disc list-inside space-y-1">
-            <li>
-              Cette application analyse chaque ligne du fichier comme un créneau de cours.
-            </li>
-            <li>
-              Pour les **professeurs**, le "Total des Heures" représente le nombre de créneaux horaires uniques (définis par le numéro de cours, le jour et l'heure). Si un professeur enseigne le même cours au même moment à plusieurs classes, ces classes sont **regroupées** sur une seule ligne dans l'emploi du temps détaillé du professeur.
-            </li>
-            <li>
-              Pour les **classes**, le "Total des Heures" représente le nombre de créneaux horaires uniques (définis par le jour et l'heure). Si plusieurs cours sont donnés simultanément pour une même classe, les informations de professeur, de cours et de local sont **regroupées** sur une seule ligne.
-            </li>
-            <li>
-              Pour les **locaux**, le "Total des Heures" représente le nombre de créneaux horaires uniques (définis par le jour et l'heure). Si un local est utilisé par plusieurs classes ou professeurs pour différents cours au même moment, ces informations sont **regroupées** sur une seule ligne.
-            </li>
-            <li>
-              Si le sigle du professeur est manquant ou ne respecte pas le format de 3 lettres majuscules, l'heure est attribuée à un professeur "INCONNU".
-            </li>
-            <li>
-              Les champs manquants (classe, cours, local, jour, heure) sont affichés comme "N/A" (Non Applicable) dans l'emploi du temps détaillé.
-            </li>
-            <li>
-              Toutes les listes sont triées par ordre alphabétique du nom de l'entité. Le professeur "INCONNU" est toujours affiché en dernier.
-            </li>
-          </ul>
-          <p className="mt-2">
-            Cliquez sur le nom d'une entité (professeur, classe ou local) dans le tableau pour afficher son emploi du temps détaillé.
+        {/* Informations de l'utilisateur et de l'application */}
+        <div className="mt-6 pt-4 border-t border-gray-200 text-center text-xs text-gray-500">
+          <p>
+            Votre ID utilisateur (UID) :{' '}
+            <span className="font-mono text-gray-700 break-all">{userId || 'N/A'}</span>
           </p>
-          <div className="mt-4 pt-2 border-t border-blue-300">
-            <p className="font-semibold">Informations utilisateur (pour le débogage) :</p>
-            <p>Votre ID utilisateur actuel : <span className="font-mono text-gray-700 break-all">{userId || "Non connecté"}</span></p>
-            <p>ID du dernier uploader : <span className="font-mono text-gray-700 break-all">{uploaderId || "Non défini"}</span></p>
-            <p>UIDs autorisés à uploader : <span className="font-mono text-gray-700 break-all">{authorizedUploaderIds.length > 0 ? authorizedUploaderIds.join(', ') : "Aucun défini (le premier upload définira le premier autorisé)"}</span></p>
-            {userId && isCurrentUserAuthorizedUploader && (
-              <p className="text-green-700 font-semibold">Vous êtes un uploader autorisé.</p>
-            )}
-            {userId && !isCurrentUserAuthorizedUploader && authorizedUploaderIds.length > 0 && (
-              <p className="text-red-700 font-semibold">Vous n'êtes pas un uploader autorisé.</p>
-            )}
-            {!userId && (
-              <p className="text-orange-700 font-semibold">En attente de connexion ou connexion anonyme.</p>
-            )}
-          </div>
+          <p>
+            ID de l'application (pour le stockage des données) :{' '}
+            <span className="font-mono text-gray-700 break-all">{appId}</span>
+          </p>
         </div>
       </div>
 
-      {/* Modale de l'emploi du temps */}
       {isModalOpen && selectedEntity && (
         <ScheduleModal
           entityName={selectedEntity.name}
