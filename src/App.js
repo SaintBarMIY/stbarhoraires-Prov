@@ -8,7 +8,7 @@ import { getFirestore, doc, setDoc, onSnapshot, getDoc } from 'firebase/firestor
 const ScheduleModal = ({ entityName, scheduleType, scheduleData, onClose }) => {
   // Mappages pour les jours et les heures pour une meilleure lisibilité
   const dayMap = {
-    '1': 'Lundi', '2': 'Mardi', '3': 'Mercredi', '4': 'Jeudi', '5': 'Vendredi',
+    '1': 'Lundi', '2': 'Mardi', '3': 'Jeudi', '4': 'Mercredi', '5': 'Vendredi',
     '6': 'Samedi', '7': 'Dimanche'
   };
 
@@ -91,7 +91,7 @@ const ScheduleModal = ({ entityName, scheduleType, scheduleData, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-4xl mx-auto"> {/* Augmenté la largeur max */}
+      <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-4xl mx-auto">
         <div className="flex justify-between items-center border-b pb-3 mb-4">
           <h2 className="text-2xl font-bold text-gray-800">{modalTitle}</h2>
           <button
@@ -102,20 +102,20 @@ const ScheduleModal = ({ entityName, scheduleType, scheduleData, onClose }) => {
           </button>
         </div>
         {scheduleData.length > 0 ? (
-          <div className="overflow-x-auto max-h-[70vh] pb-4"> {/* Hauteur max pour le défilement */}
+          <div className="overflow-x-auto max-h-[70vh] pb-4">
             <table className="min-w-full bg-white border border-gray-200 rounded-lg table-fixed">
               <thead className="bg-gray-100 sticky top-0 z-10">
-                <tr> {/* Début de la ligne d'en-tête */}
+                <tr>
                   <th className="py-2 px-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-24">Heure / Jour</th>
                   {daysOfWeek.map(dayKey => (<th key={dayKey} className="py-2 px-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-1/5">{dayMap[dayKey]}</th>))}
-                </tr> {/* Fin de la ligne d'en-tête */}
+                </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {hoursOfDay.map(hourKey => (
-                  <tr key={hourKey} className="h-20"> {/* Début de chaque ligne d'heure */}
+                  <tr key={hourKey} className="h-20">
                     <td className="py-2 px-3 text-sm text-gray-800 font-medium border-r border-gray-200">{hourMap[hourKey]}</td>
                     {daysOfWeek.map(dayKey => (<td key={`${dayKey}-${hourKey}`} className="py-2 px-3 text-sm text-gray-800 align-top border-r border-gray-200">{scheduleGrid[dayKey][hourKey]}</td>))}
-                  </tr> /* Fin de chaque ligne d'heure */
+                  </tr>
                 ))}
               </tbody>
             </table>
@@ -160,8 +160,6 @@ const convertSetsToArrays = (obj) => {
 };
 
 function App() {
-  // Déclaration de appId au début du composant pour qu'il soit accessible globalement
-  // CORRECTION : Utilisation de __app_id au lieu de process.env.REACT_APP_APP_ID
   const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
   const [professorHours, setProfessorHours] = useState({});
@@ -172,19 +170,18 @@ function App() {
   const [selectedEntity, setSelectedEntity] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [fileName, setFileName] = useState("Aucun fichier sélectionné");
-  const [fileUrl, setFileUrl] = useState(''); // État pour l'URL du fichier
+  const [fileUrl, setFileUrl] = useState('');
 
   // Firebase states
   const [db, setDb] = useState(null);
   const [userId, setUserId] = useState(null);
   const [isAuthReady, setIsAuthReady] = useState(false);
-  const [uploaderId, setUploaderId] = useState(null); // ID de l'utilisateur qui a uploadé le fichier (pour info, pas pour permission)
-  const [authorizedUploaderIds, setAuthorizedUploaderIds] = useState([]); // Nouvelle liste des UIDs autorisés
+  const [uploaderId, setUploaderId] = useState(null);
+  const [authorizedUploaderIds, setAuthorizedUploaderIds] = useState([]);
 
   // Initialisation de Firebase et authentification
   useEffect(() => {
     try {
-      // CORRECTION : Utilisation de __firebase_config au lieu de process.env.REACT_APP_FIREBASE_CONFIG
       const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
 
       if (Object.keys(firebaseConfig).length === 0) {
@@ -205,8 +202,6 @@ function App() {
           setUserId(user.uid);
         } else {
           try {
-            // Dans l'environnement Netlify, __initial_auth_token sera undefined,
-            // donc nous nous rabattrons sur la connexion anonyme.
             if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
               await signInWithCustomToken(firebaseAuth, __initial_auth_token);
             } else {
@@ -226,13 +221,12 @@ function App() {
       setError("Erreur lors de l'initialisation de Firebase. Vérifiez votre configuration.");
       setLoading(false);
     }
-  }, [appId]); // Ajout de appId comme dépendance pour s'assurer qu'elle est bien définie
+  }, [appId]);
 
   // Chargement des données des horaires depuis Firestore
   useEffect(() => {
     if (!db || !isAuthReady) return;
 
-    // Utilisation de appId déjà déclarée
     const scheduleDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'schedules', 'main-schedule');
 
     const unsubscribe = onSnapshot(scheduleDocRef, (docSnap) => {
@@ -240,7 +234,7 @@ function App() {
         const data = docSnap.data();
         setProfessorHours(data.professorHours || {});
         setAllSchedules(data.allSchedules || { professors: {}, classes: {}, rooms: {} });
-        setUploaderId(data.uploaderId || null); // Conserve l'ID du dernier uploader pour information
+        setUploaderId(data.uploaderId || null);
         setLoading(false);
       } else {
         console.log("Aucun emploi du temps trouvé dans Firestore. Le premier upload le créera.");
@@ -256,13 +250,12 @@ function App() {
     });
 
     return () => unsubscribe();
-  }, [db, isAuthReady, appId]); // Ajout de appId comme dépendance
+  }, [db, isAuthReady, appId]);
 
   // Chargement de la liste des UIDs autorisés depuis Firestore
   useEffect(() => {
     if (!db || !isAuthReady) return;
 
-    // Utilisation de appId déjà déclarée
     const authorizedUploaderDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'authorized_uploaders', 'list');
 
     const unsubscribe = onSnapshot(authorizedUploaderDocRef, (docSnap) => {
@@ -275,17 +268,13 @@ function App() {
       }
     }, (dbError) => {
       console.error("Erreur lors du chargement des UIDs autorisés:", dbError);
-      // Ne pas définir d'erreur critique ici pour ne pas bloquer l'app si la liste n'est pas trouvée
     });
 
     return () => unsubscribe();
-  }, [db, isAuthReady, appId]); // Ajout de appId comme dépendance
+  }, [db, isAuthReady, appId]);
 
   /**
    * Sauvegarde les données traitées dans Firestore.
-   * @param {object} hoursData Les heures totales des professeurs.
-   * @param {object} schedulesData Les emplois du temps détaillés.
-   * @param {string} currentUserId L'ID de l'utilisateur actuel.
    */
   const saveScheduleToFirestore = async (hoursData, schedulesData, currentUserId) => {
     if (!db || !currentUserId) {
@@ -296,50 +285,44 @@ function App() {
     setLoading(true);
     setError(null);
 
-    // Utilisation de appId déjà déclarée
     const scheduleDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'schedules', 'main-schedule');
     const authorizedUploaderDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'authorized_uploaders', 'list');
 
     try {
       const schedulesDataForFirestore = convertSetsToArrays(schedulesData);
 
-      // Vérifier si le document 'main-schedule' existe déjà
-      const scheduleDocSnap = await getDoc(scheduleDocRef); // Utilisez getDoc ici pour vérifier l'existence
+      const scheduleDocSnap = await getDoc(scheduleDocRef);
       const isFirstUpload = !scheduleDocSnap.exists();
 
       await setDoc(scheduleDocRef, {
         professorHours: hoursData,
         allSchedules: schedulesDataForFirestore,
-        uploaderId: currentUserId, // L'ID de la personne qui vient d'uploader
+        uploaderId: currentUserId,
         lastUpdatedBy: currentUserId,
         lastUpdatedAt: new Date().toISOString()
       });
       console.log("Données sauvegardées avec succès dans Firestore !");
 
-      // Si c'est le tout premier upload, ajoutez l'UID de l'utilisateur actuel à la liste des uploaders autorisés
       if (isFirstUpload) {
         const authorizedUploaderDocSnap = await getDoc(authorizedUploaderDocRef);
         let updatedAuthorizedUids = [];
 
         if (authorizedUploaderDocSnap.exists()) {
-          // Si le document existe, ajoutez l'UID à la liste existante si pas déjà présent
           const existingUids = authorizedUploaderDocSnap.data().uids || [];
           if (!existingUids.includes(currentUserId)) {
             updatedAuthorizedUids = [...existingUids, currentUserId];
           } else {
-            // If it already exists, just use the existing ones
             updatedAuthorizedUids = existingUids;
           }
         } else {
-          // Si le document n'existe pas, créez-le avec l'UID de l'utilisateur actuel
           updatedAuthorizedUids = [currentUserId];
         }
         await setDoc(authorizedUploaderDocRef, { uids: updatedAuthorizedUids });
-        setAuthorizedUploaderIds(updatedAuthorizedUids); // Mettre à jour l'état local
+        setAuthorizedUploaderIds(updatedAuthorizedUids);
         console.log("UID de l'uploader ajouté à la liste des autorisés.");
       }
 
-      setUploaderId(currentUserId); // Met à jour l'ID de l'uploader localement
+      setUploaderId(currentUserId);
     } catch (saveError) {
       console.error("Erreur lors de la sauvegarde dans Firestore:", saveError);
       setError("Erreur lors de la sauvegarde des données. Veuillez réessayer.");
@@ -351,8 +334,6 @@ function App() {
 
   /**
    * Traite le contenu du fichier pour extraire les heures de cours et l'emploi du temps détaillé.
-   * Appelle saveScheduleToFirestore après traitement.
-   * @param {string} content Le contenu textuel du fichier.
    */
   const processFileContent = async (content) => {
     setLoading(true);
@@ -438,7 +419,7 @@ function App() {
         finalAllSchedules.professors[prof] = Object.values(groupedSlots).map(groupedEntry => ({
           courseNumber: groupedEntry.courseNumber, day: groupedEntry.day, hour: groupedEntry.hour,
           course: groupedEntry.course, room: groupedEntry.room,
-          class: Array.from(groupedEntry.classes).sort().join(', '), // Pour l'affichage
+          class: Array.from(groupedEntry.classes).sort().join(', '),
           professorName: groupedEntry.professorName
         }));
       }
@@ -495,8 +476,7 @@ function App() {
       setProfessorHours(finalProfessorHoursMap);
       setAllSchedules(finalAllSchedules);
 
-      // Sauvegarder dans Firestore après un traitement réussi
-      if (userId) { // S'assurer que l'utilisateur est authentifié pour sauvegarder
+      if (userId) {
         await saveScheduleToFirestore(finalProfessorHoursMap, finalAllSchedules, userId);
       } else {
         setError("Impossible de sauvegarder : utilisateur non authentifié.");
@@ -512,8 +492,6 @@ function App() {
 
   /**
    * Gère le changement de fichier via l'input de type 'file'.
-   * Lit le contenu du fichier et le passe à processFileContent.
-   * @param {Event} event L'événement de changement de fichier.
    */
   const handleFileChange = (event) => {
     const file = event.target.files[0];
@@ -522,7 +500,7 @@ function App() {
       setLoading(true);
       setError(null);
       const reader = new FileReader();
-      reader.onload = async (e) => { // Rendre async pour await processFileContent
+      reader.onload = async (e) => {
         try {
           await processFileContent(e.target.result);
         } catch (err) {
@@ -543,7 +521,6 @@ function App() {
 
   /**
    * Gère le téléchargement du fichier depuis une URL.
-   *
    */
   const handleFetchFileFromUrl = async () => {
     if (!fileUrl) {
@@ -552,7 +529,6 @@ function App() {
     }
     setLoading(true);
     setError(null);
-    console.log("Tentative de chargement depuis l'URL:", fileUrl); // Log the URL being fetched
     try {
       const response = await fetch(fileUrl);
       if (!response.ok) {
@@ -560,7 +536,7 @@ function App() {
       }
       const textContent = await response.text();
       await processFileContent(textContent);
-      setFileName(`Fichier chargé depuis URL: ${fileUrl}`); // Mettre à jour le nom du fichier pour l'affichage
+      setFileName(`Fichier chargé depuis URL: ${fileUrl}`);
     } catch (err) {
       console.error("Erreur lors du chargement du fichier depuis l'URL:", err);
       setError(`Impossible de charger le fichier depuis l'URL : ${err.message}. Veuillez vérifier l'URL et les permissions CORS.`);
@@ -589,40 +565,34 @@ function App() {
     if (type === 'professors') {
       hoursMap = professorHours;
       dataArray = Object.entries(hoursMap).map(([name, hours]) => ({ name, hours }));
-      // Trier 'INCONNU' en dernier, le reste par ordre alphabétique
       dataArray.sort((a, b) => {
         if (a.name === UNKNOWN_PROFESSOR_KEY) return 1;
         if (b.name === UNKNOWN_PROFESSOR_KEY) return -1;
-        return a.name.localeCompare(b.name); // Tri alphabétique par nom
+        return a.name.localeCompare(b.name);
       });
     } else if (type === 'classes') {
       hoursMap = {};
-      // Le total des heures pour les classes est le nombre d'entrées regroupées
       for (const className in allSchedules.classes) {
         hoursMap[className] = allSchedules.classes[className].length;
       }
       dataArray = Object.entries(hoursMap).map(([name, hours]) => ({ name, hours }));
-      dataArray.sort((a, b) => a.name.localeCompare(b.name)); // Tri alphabétique par nom
+      dataArray.sort((a, b) => a.name.localeCompare(b.name));
     } else if (type === 'rooms') {
       hoursMap = {};
-      // Le total des heures pour les locaux est le nombre d'entrées regroupées
       for (const roomName in allSchedules.rooms) {
         hoursMap[roomName] = allSchedules.rooms[roomName].length;
       }
       dataArray = Object.entries(hoursMap).map(([name, hours]) => ({ name, hours }));
-      dataArray.sort((a, b) => a.name.localeCompare(b.name)); // Tri alphabétique par nom
+      dataArray.sort((a, b) => a.name.localeCompare(b.name));
     }
     return dataArray;
   };
 
   const currentData = getSortedData(activeTab);
 
-  // Déterminer si l'utilisateur actuel est un uploader autorisé
   const isCurrentUserAuthorizedUploader = userId && authorizedUploaderIds.includes(userId);
-  // Permettre le premier upload si aucun horaire n'a été uploadé ET aucune liste d'uploaders n'existe
-  // OU si l'utilisateur actuel est dans la liste des uploaders autorisés.
   const canUpload = userId && (
-    (Object.keys(professorHours).length === 0 && authorizedUploaderIds.length === 0) || // Permet le tout premier upload
+    (Object.keys(professorHours).length === 0 && authorizedUploaderIds.length === 0) ||
     isCurrentUserAuthorizedUploader
   );
 
