@@ -8,7 +8,7 @@ import { getFirestore, doc, setDoc, onSnapshot, getDoc } from 'firebase/firestor
 const ScheduleModal = ({ entityName, scheduleType, scheduleData, onClose }) => {
   // Mappages pour les jours et les heures pour une meilleure lisibilité
   const dayMap = {
-    '1': 'Lundi', '2': 'Mardi', '3': 'Jeudi', '4': 'Mercredi', '5': 'Vendredi',
+    '1': 'Lundi', '2': 'Mardi', '3': 'Mercredi', '4': 'Jeudi', '5': 'Vendredi',
     '6': 'Samedi', '7': 'Dimanche'
   };
 
